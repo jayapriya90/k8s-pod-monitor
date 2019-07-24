@@ -1,0 +1,84 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pod-monitor-cluster-role
+rules:
+  - apiGroups:
+      - jayapriya90.github.com
+    resources:
+      - podmonitors
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - jayapriya90.github.com
+    resources:
+      - podmonitors/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - '*'
+
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: pod-monitor-service-account
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pod-monitor-cluster-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pod-monitor-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: pod-monitor-service-account
+    namespace: default
+
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-pod-monitor
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: k8s-pod-monitor
+    spec:
+      serviceAccountName: pod-monitor-service-account
+      containers:
+        - name: k8s-pod-monitor
+          image: priya7390/pod-monitor:0.1
+          imagePullPolicy: IfNotPresent
+
