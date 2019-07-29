@@ -9,5 +9,5 @@ notifications:
     - priya7390@gmail.com
 
 script:
-  - go vet $(go list ./... | grep -v /vendor/)
+  - go get -t -v ./...
   - go build
