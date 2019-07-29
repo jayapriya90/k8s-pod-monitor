@@ -5,6 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/util/retry"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -15,12 +16,11 @@ import (
 // PodHandler is a sample implementation of Handler
 type PodHandler struct {
 	crdClient   *v1alpha1.PodMonitorV1Alpha1Client
-	podMonitor *v1alpha1.PodMonitor
 	podsPending map[string]bool
 	podsRunning map[string]bool
 }
 
-func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, *v1alpha1.PodMonitor, error) {
+func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, error) {
 	client, err := apiextension.NewForConfig(config)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -49,23 +49,23 @@ func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, *
 	}
 	// check if pod-monitor resource already exists in default namespace
 	// create if it does not exist
-	pm, err := crdclient.PodMonitors("default").Get("pod-monitor")
+	_, err = crdclient.PodMonitors("default").Get("pod-monitor")
 	if err != nil && errors.IsNotFound(err) {
-		pm, err = crdclient.PodMonitors("default").Create(&podMonitor)
+		_, err := crdclient.PodMonitors("default").Create(&podMonitor)
 		if err != nil {
 			panic(err)
 		}
 	}
-	return crdclient, pm, nil
+	return crdclient, nil
 }
 
 // Handler initialization
 func NewPodHandler(config *rest.Config) *PodHandler {
-	crdClient, podMonitor, err := createCRDClient(config)
+	crdClient, err := createCRDClient(config)
 	if err != nil {
 		panic(err)
 	}
-	return &PodHandler{crdClient: crdClient, podMonitor: podMonitor, podsPending: make(map[string]bool), podsRunning: make(map[string]bool)}
+	return &PodHandler{crdClient: crdClient,podsPending: make(map[string]bool), podsRunning: make(map[string]bool)}
 }
 
 // ObjectCreated is called when an object is created
@@ -99,13 +99,21 @@ func (t *PodHandler) updateCounters(key string, pod *core_v1.Pod) {
 }
 
 func (t *PodHandler) updateCRD() {
-	t.podMonitor.Status.PodRunningCount = int32(len(t.podsRunning))
-	t.podMonitor.Status.PodPendingCount = int32(len(t.podsPending))
-	updated, err := t.crdClient.PodMonitors("default").Update(t.podMonitor)
+	current, err := t.crdClient.PodMonitors("default").Get("pod-monitor")
+	current.Status.PodRunningCount = int32(len(t.podsRunning))
+	current.Status.PodPendingCount = int32(len(t.podsPending))
+	err = retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		_, err := t.crdClient.PodMonitors("default").Update(current)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		panic(err)
+		log.Errorf("%v", err)
 	}
-	t.podMonitor = updated
 }
 
 // ObjectDeleted is called when an object is deleted
