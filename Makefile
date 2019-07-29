@@ -6,6 +6,10 @@ PREFIX = priya7390/pod-monitor
 DISTDIR = $(CURDIR)/dist
 BINDIR = $(CURDIR)/bin
 
+----------------------------
+targets to build/run locally
+----------------------------
+
 build:
 	dep ensure
 	go build
@@ -20,13 +24,18 @@ clean:
 	rm -rf dist
 	rm -rf vendor
 
-build-cross:
+
+---------------
+docker targets
+---------------
+
+build-cross: #cross-compilation for linux
 	CGO_ENABLED=0 gox -output="$(DISTDIR)/{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='linux/amd64' $(GOFLAGS) -ldflags '-extldflags -static' ./...
 
-build-docker: build-cross
+build-docker: build-cross #build docker image
 	docker build -t $(PREFIX):$(TAG) .
 
-push-docker: build-docker
+push-docker: build-docker #push image to docker hub
 	docker push $(PREFIX):$(TAG)
 
 
