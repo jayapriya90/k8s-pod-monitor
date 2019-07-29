@@ -20,7 +20,7 @@ import (
 // retrieve the Kubernetes cluster client from outside the cluster.
 // if cannot be connected from out of cluster, fallback is to try
 // from within the cluster
-func getKubernetesClient() (kubernetes.Interface, *rest.Config) {
+func GetKubernetesClient() (kubernetes.Interface, *rest.Config) {
 	// construct the path to resolve to `~/.kube/config`
 	kubeConfigPath := os.Getenv("HOME") + "/.kube/config"
 
@@ -45,7 +45,7 @@ func getKubernetesClient() (kubernetes.Interface, *rest.Config) {
 
 func main() {
 	// get kubernetes client
-	client, config := getKubernetesClient()
+	client, config := GetKubernetesClient()
 
 	// create the informer to watch all the pods
 	informer := cache.NewSharedIndexInformer(
