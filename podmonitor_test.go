@@ -1,20 +1,14 @@
 package main
 
 import (
-	"context"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/jayapriya90/k8s-pod-monitor/v1alpha1"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
-	uclient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/gruntwork-io/terratest/modules/k8s"
 )
 
 // Test the Kubernetes resource config using Terratest.
@@ -51,19 +45,12 @@ func TestKubernetesBasic(t *testing.T) {
 	// wait for the pod to be available
 	time.Sleep(30 * time.Second)
 
-	dynamicClient, err := uclient.New(config, uclient.Options{})
+	podMonitorClient, err := v1alpha1.NewClient(config)
 	require.NoError(t, err)
-	podmonitor := &unstructured.Unstructured{}
-	podmonitor.SetGroupVersionKind(schema.GroupVersionKind{
-		Kind:    "PodMonitor",
-		Group:   v1alpha1.CRDGroup,
-		Version: v1alpha1.CRDVersion,
-	})
+	podMonitor, err := podMonitorClient.PodMonitors("default").Get("pod-monitor")
+	require.NoError(t, err)
 	newPodCount := currentRunningPods + 2
-	err = dynamicClient.Get(context.TODO(), types.NamespacedName{Name: "pod-monitor", Namespace: "default"}, podmonitor)
-	require.NoError(t, err)
-	status, ok := podmonitor.Object["status"].(map[string]interface{})
-	require.Equal(t, true, ok)
-	require.Equal(t, int64(newPodCount), status["podRunningCount"])
+
+	require.Equal(t, int32(newPodCount), podMonitor.Status.PodRunningCount)
 }
 
