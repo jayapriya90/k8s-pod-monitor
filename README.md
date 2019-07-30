@@ -79,6 +79,18 @@ make run
 
 ![Alt text](images/pod_monitor_controller_1.png?raw=true "Pod Monitor Controller")
 
+3. Run test. Open a new terminal and cd into `k8s-pod-monitor` directory. 
+```
+make test
+```
+
+![Alt text](images/pod_monitor_test.png?raw=true "Pod Monitor Test Result")
+
+4. Dockerize the solution and push to public docker hub so that this image can be referenced in the pod-monitor deployment yaml (`pod-monitor-deployment.yaml`). This is optional if there are no new enhancements/changes as we already have the image in docker hub.
+
+```
+make push-docker
+```
 
 ## Future Enhancements
 - To make pod-monitor controller (responsible from metrics acquisition and storage into etcd) highly available. `leader-election` package in the `client-go` can be used to implement HA controllers (https://github.com/kubernetes/client-go/tree/066127c6df69d5945429ced9754841765b5a0310/tools/leaderelection)
