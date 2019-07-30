@@ -51,5 +51,13 @@ kubectl apply -f nginx-deployment.yaml
 - gox (https://github.com/mitchellh/gox)
 
 
-
+## References
+- https://github.com/kubernetes/client-go
+- https://github.com/kubernetes/sample-controller
+- https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/
+- https://medium.com/velotio-perspectives/extending-kubernetes-apis-with-custom-resource-definitions-crds-139c99ed3477
+- https://medium.com/@trstringer/create-kubernetes-controllers-for-core-and-custom-resources-62fc35ad64a3
+- https://itnext.io/how-to-create-a-kubernetes-custom-controller-using-client-go-f36a7a7536cc
+- https://engineering.bitnami.com/articles/kubewatch-an-example-of-kubernetes-custom-controller.html
+- https://github.com/kubernetes-sigs/kubebuilder
 
