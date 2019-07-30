@@ -32,6 +32,16 @@ kubectl get pm pod-monitor -o yaml
 
 ![Alt text](images/pod_monitor_crd_1.png?raw=true "Pod Monitor CRD")
 
+7. cd into test_k8s_manifests repository
+```
+cd test_k8s_manifests
+```
+8. Apply nginx deployment (replicas = 2. this'll create 2 nginx pods)
+```
+kubectl apply -f nginx-deployment.yaml
+```
+9. 
+
 ## Requirements to build/run/test locally
 - Go 1.10
 - Docker
