@@ -57,7 +57,7 @@ kubectl delete deployment nginx-deployment-test
 
 11. Get `pod-monitor` custom resource. `podRunningCount` in the pod-monitor status is updated from 11 to 9 as the 2 nginx test pods are not running anymore (since deletion in the previous step)
 
-![Alt text](images/pod_monitor_crd_2.png?raw=true "Pod Monitor CRD")
+![Alt text](images/pod_monitor_crd_3.png?raw=true "Pod Monitor CRD")
 
 
 ## Requirements to build/run/test locally
