@@ -86,7 +86,11 @@ make test
 
 ![Alt text](images/pod_monitor_test.png?raw=true "Pod Monitor Test Result")
 
-4. Dockerize the solution and push to public docker hub so that this image can be referenced in the pod-monitor deployment yaml (`pod-monitor-deployment.yaml`). This is optional if there are no new enhancements/changes as we already have the image in docker hub.
+4. Observe the controller log after running `make test`. The test auto-deploys test nginx deployment and checks if the `podRunningCount` is updated accordingly in the `pod-monitor` CRD. At the end of the test, `kubectl delete -f nginx-deployment.yaml` is automatically run to clean up the resources created for test
+ 
+![Alt text](images/pod_monitor_controller_log_for_test?raw=true "Pod Monitor Controller Log For Test")
+
+5. Dockerize the solution and push to public docker hub so that this image can be referenced in the pod-monitor deployment yaml (`pod-monitor-deployment.yaml`). This is optional if there are no new enhancements/changes as we already have the image in docker hub.
 
 ```
 make push-docker
