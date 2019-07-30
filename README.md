@@ -40,7 +40,14 @@ cd test_k8s_manifests
 ```
 kubectl apply -f nginx-deployment.yaml
 ```
-9. 
+9. Get `pod-monitor` custom resource. `PodCreatedCount` in the pod-monitor status reflects the number of pods created from the
+moment the k8s-pod-monitor has been deployed and until the moment of request. `podCreatedCount` is `2` as we created 2 pods via the
+previous nginx deployment. The pods are currently in running state and hence the `podRunningCount` is updated from 9 to 11 
+```
+kubectl get pm pod-monitor -o yaml
+```
+
+![Alt text](images/pod_monitor_crd_2.png?raw=true "Pod Monitor CRD")
 
 ## Requirements to build/run/test locally
 - Go 1.10
