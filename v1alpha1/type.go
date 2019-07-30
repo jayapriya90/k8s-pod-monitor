@@ -15,7 +15,7 @@ type PodMonitorSpec struct{}
 
 // PodMonitorStatus ...
 type PodMonitorStatus struct {
-	PodPendingCount int32 `json:"podPendingCount,omitempty"`
+	PodCreatedCount int32 `json:"podCreatedCount,omitempty"`
 	PodRunningCount int32 `json:"podRunningCount,omitempty"`
 }
 
