@@ -12,7 +12,7 @@ import (
 )
 
 // Test the Kubernetes resource config using Terratest.
-func TestKubernetesBasic(t *testing.T) {
+func TestKubernetesRunningPodCount(t *testing.T) {
 	t.Parallel()
 
 	// Path to the Kubernetes resource config we will test
