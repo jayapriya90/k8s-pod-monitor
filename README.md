@@ -15,7 +15,7 @@ git clone git@github.com:jayapriya90/k8s-pod-monitor.git
 ```
 3. cd into the repository
 ```
-k8s-pod-monitor
+cd k8s-pod-monitor
 ```
 4. Apply pod monitor deployment
 ```
@@ -67,7 +67,21 @@ kubectl delete deployment nginx-deployment-test
 - Kubectl cli client
 - dep
 - gox (https://github.com/mitchellh/gox)
+### Steps
+1. cd into the repository
+```
+cd k8s-pod-monitor
+```
+2. Build and Run. This will fetch all the dependencies, build the binary and start the controller
+```
+make run
+```
 
+![Alt text](images/pod_monitor_controller_1.png?raw=true "Pod Monitor Controller")
+
+
+## Future Enhancements
+- To make pod-monitor controller (responsible from metrics acquisition and storage into etcd) highly available. `leader-election` package in the `client-go` can be used to implement HA controllers (https://github.com/kubernetes/client-go/tree/066127c6df69d5945429ced9754841765b5a0310/tools/leaderelection)
 
 ## References
 - https://github.com/kubernetes/client-go
