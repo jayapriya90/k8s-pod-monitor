@@ -16,11 +16,12 @@ import (
 // PodHandler is a sample implementation of Handler
 type PodHandler struct {
 	crdClient   *v1alpha1.PodMonitorV1Alpha1Client
-	podsPending map[string]bool
+	startedTimestamp time.Time
+	podsCreated map[string]bool
 	podsRunning map[string]bool
 }
 
-func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, error) {
+func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, time.Time, error) {
 	client, err := apiextension.NewForConfig(config)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
@@ -45,27 +46,29 @@ func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, e
 		TypeMeta: v1.TypeMeta{Kind: "PodMonitor", APIVersion: "v1alpha1"},
 		ObjectMeta: v1.ObjectMeta{Name: "pod-monitor"},
 		Spec: v1alpha1.PodMonitorSpec{},
-		Status: v1alpha1.PodMonitorStatus{PodPendingCount: 0, PodRunningCount: 0},
+		Status: v1alpha1.PodMonitorStatus{PodCreatedCount: 0, PodRunningCount: 0},
 	}
 	// check if pod-monitor resource already exists in default namespace
 	// create if it does not exist
 	_, err = crdclient.PodMonitors("default").Get("pod-monitor")
+	var startedTs time.Time
 	if err != nil && errors.IsNotFound(err) {
 		_, err := crdclient.PodMonitors("default").Create(&podMonitor)
 		if err != nil {
 			panic(err)
 		}
+		startedTs = time.Now()
 	}
-	return crdclient, nil
+	return crdclient, startedTs, nil
 }
 
 // Handler initialization
 func NewPodHandler(config *rest.Config) *PodHandler {
-	crdClient, err := createCRDClient(config)
+	crdClient, startedTs, err := createCRDClient(config)
 	if err != nil {
 		panic(err)
 	}
-	return &PodHandler{crdClient: crdClient,podsPending: make(map[string]bool), podsRunning: make(map[string]bool)}
+	return &PodHandler{crdClient: crdClient, startedTimestamp: startedTs, podsCreated: make(map[string]bool), podsRunning: make(map[string]bool)}
 }
 
 // ObjectCreated is called when an object is created
@@ -73,41 +76,43 @@ func (t *PodHandler) ObjectCreated(key string, obj interface{}) {
 	log.Infof("PodHandler.ObjectCreated -> %s", key)
 	// assert the type to a Pod object to pull out relevant data
 	pod := obj.(*core_v1.Pod)
-	t.updateCounters(key, pod)
+	if pod.Status.Phase == "Pending" {
+		if pod.CreationTimestamp.Time.Before(t.startedTimestamp) {
+			log.Infof("%s pod created before k8s pod monitor service start..ignoring", key)
+			return
+		}
+		if _, exists := t.podsCreated[key]; !exists {
+			t.podsCreated[key] = true
+		}
+	}
+	if pod.Status.Phase == "Running" {
+		if _, exists := t.podsRunning[key]; !exists {
+			t.podsRunning[key] = true
+		}
+	}
+	log.Infof("    podsCreated: %d", len(t.podsCreated))
+	log.Infof("    podsRunning: %d", len(t.podsRunning))
+	t.updateCRD()
 }
 
-func (t *PodHandler) updateCounters(key string, pod *core_v1.Pod) {
-	qualifiedName := key
-	if pod.Status.Phase == "Pending" {
-		// current state is Pending, but previous state is Running
-		// remove from running state and move to pending state amp
-		if _, exists := t.podsRunning[qualifiedName]; exists {
-			delete(t.podsRunning, qualifiedName)
-		}
-		t.podsPending[qualifiedName] = true
-	} else if pod.Status.Phase == "Running" {
-		// current state is Running, but previous state is Pending
-		// remove from running state and move to pending state map
-		if _, exists := t.podsPending[qualifiedName]; exists {
-			delete(t.podsPending, qualifiedName)
-		}
-		t.podsRunning[qualifiedName] = true
-	}
+// ObjectDeleted is called when an object is deleted
+func (t *PodHandler) ObjectDeleted(key string, obj interface{}) {
+	log.Infof("PodHandler.ObjectDeleted -> %s", key)
+	delete(t.podsRunning, key)
+	log.Infof("    podsCreated: %d", len(t.podsCreated))
 	log.Infof("    podsRunning: %d", len(t.podsRunning))
-	log.Infof("    podsPending: %d", len(t.podsPending))
 	t.updateCRD()
 }
 
 func (t *PodHandler) updateCRD() {
 	current, err := t.crdClient.PodMonitors("default").Get("pod-monitor")
 	current.Status.PodRunningCount = int32(len(t.podsRunning))
-	current.Status.PodPendingCount = int32(len(t.podsPending))
+	current.Status.PodCreatedCount = int32(len(t.podsCreated))
 	err = retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		_, err := t.crdClient.PodMonitors("default").Update(current)
 		if err != nil {
 			return err
 		}
-
 		return nil
 	})
 
@@ -116,20 +121,3 @@ func (t *PodHandler) updateCRD() {
 	}
 }
 
-// ObjectDeleted is called when an object is deleted
-func (t *PodHandler) ObjectDeleted(key string, obj interface{}) {
-	log.Infof("PodHandler.ObjectDeleted -> %s", key)
-	qualifiedName := key
-	delete(t.podsPending, qualifiedName)
-	delete(t.podsRunning, qualifiedName)
-	log.Infof("    podsRunning: %d", len(t.podsRunning))
-	log.Infof("    podsPending: %d", len(t.podsPending))
-	t.updateCRD()
-}
-
-// ObjectUpdated is called when an object is updated
-func (t *PodHandler) ObjectUpdated(key string, objOld, objNew interface{}) {
-	log.Infof("PodHandler.ObjectUpdated -> %s", key)
-	pod := objOld.(*core_v1.Pod)
-	t.updateCounters(key, pod)
-}
