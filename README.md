@@ -99,7 +99,7 @@ make push-docker
 ```
 
 ## Future Enhancements
-- To make pod-monitor controller (responsible from metrics acquisition and storage into etcd) highly available. `leader-election` package in the `client-go` can be used to implement HA controllers (https://github.com/kubernetes/client-go/tree/066127c6df69d5945429ced9754841765b5a0310/tools/leaderelection)
+- To make pod-monitor controller (responsible for metrics acquisition and storage into etcd) highly available. `leader-election` package in the `client-go` can be used to implement HA controllers (https://github.com/kubernetes/client-go/tree/066127c6df69d5945429ced9754841765b5a0310/tools/leaderelection)
 
 ## References
 - https://github.com/kubernetes/client-go
