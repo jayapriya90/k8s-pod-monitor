@@ -63,7 +63,7 @@ kubectl delete deployment nginx-deployment-test
 
 
 ## Requirements to build/run/test locally
-- Go 1.10
+- Go 1.10+
 - Docker
 - Kubernetes cluster
 - Kubectl cli client
