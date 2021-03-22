@@ -1,6 +1,8 @@
 # k8s-pod-monitor
 
-Travis CI Build Status [![Build Status](https://travis-ci.com/jayapriya90/k8s-pod-monitor.svg?branch=master)](https://travis-ci.com/jayapriya90/k8s-pod-monitor)
+Travis CI Build Status [![Build Status](https://travis-ci.com/jayapriya90/k8s-pod-monitor.svg?branch=master)](https://travis-ci.com/jayapriya90/k8s-pod-monitor) [![Go Report Card](https://goreportcard.com/badge/github.com/jayapriya90/k8s-pod-monitor)](https://goreportcard.com/report/github.com/jayapriya90/k8s-pod-monitor)
+
+
 
 K8s pod monitor keeps track of the following two metrics 
 1. the total number of pods that have been created, not necessarily scheduled, from the
