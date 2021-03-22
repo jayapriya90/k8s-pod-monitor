@@ -32,8 +32,8 @@ func CreateCRD(clientset apiextension.Interface) error {
 			Version: CRDVersion,
 			Scope:   apiextensionv1beta1.ClusterScoped,
 			Names: apiextensionv1beta1.CustomResourceDefinitionNames{
-				Plural: CRDPlural,
-				Kind:   reflect.TypeOf(PodMonitor{}).Name(),
+				Plural:     CRDPlural,
+				Kind:       reflect.TypeOf(PodMonitor{}).Name(),
 				ShortNames: []string{"pm"},
 			},
 		},

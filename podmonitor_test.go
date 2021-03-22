@@ -53,4 +53,3 @@ func TestKubernetesRunningPodCount(t *testing.T) {
 
 	require.Equal(t, int32(newPodCount), podMonitor.Status.PodRunningCount)
 }
-

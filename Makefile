@@ -17,6 +17,12 @@ build:
 run: build
 	./k8s-pod-monitor
 
+fmt:
+	go fmt ./...
+
+lint:
+	golint ./...
+
 test:
 	go test
 

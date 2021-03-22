@@ -17,8 +17,8 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
-// retrieve the Kubernetes cluster client from outside the cluster.
-// if cannot be connected from out of cluster, fallback is to try
+// GetKubernetesClient retrieves the Kubernetes cluster client from outside the
+// cluster. If cannot be connected from out of cluster, fallback is to try
 // from within the cluster
 func GetKubernetesClient() (kubernetes.Interface, *rest.Config) {
 	// construct the path to resolve to `~/.kube/config`

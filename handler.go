@@ -15,10 +15,10 @@ import (
 
 // PodHandler is a sample implementation of Handler
 type PodHandler struct {
-	crdClient   *v1alpha1.PodMonitorV1Alpha1Client
+	crdClient        *v1alpha1.PodMonitorV1Alpha1Client
 	startedTimestamp time.Time
-	podsCreated map[string]bool
-	podsRunning map[string]bool
+	podsCreated      map[string]bool
+	podsRunning      map[string]bool
 }
 
 func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, time.Time, error) {
@@ -43,10 +43,10 @@ func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, t
 	}
 
 	podMonitor := v1alpha1.PodMonitor{
-		TypeMeta: v1.TypeMeta{Kind: "PodMonitor", APIVersion: "v1alpha1"},
+		TypeMeta:   v1.TypeMeta{Kind: "PodMonitor", APIVersion: "v1alpha1"},
 		ObjectMeta: v1.ObjectMeta{Name: "pod-monitor"},
-		Spec: v1alpha1.PodMonitorSpec{},
-		Status: v1alpha1.PodMonitorStatus{PodCreatedCount: 0, PodRunningCount: 0},
+		Spec:       v1alpha1.PodMonitorSpec{},
+		Status:     v1alpha1.PodMonitorStatus{PodCreatedCount: 0, PodRunningCount: 0},
 	}
 	// check if pod-monitor resource already exists in default namespace
 	// create if it does not exist
@@ -62,7 +62,7 @@ func createCRDClient(config *rest.Config) (*v1alpha1.PodMonitorV1Alpha1Client, t
 	return crdclient, startedTs, nil
 }
 
-// Handler initialization
+// NewPodHandler initialization
 func NewPodHandler(config *rest.Config) *PodHandler {
 	crdClient, startedTs, err := createCRDClient(config)
 	if err != nil {
@@ -120,4 +120,3 @@ func (t *PodHandler) updateCRD() {
 		log.Errorf("%v", err)
 	}
 }
-
